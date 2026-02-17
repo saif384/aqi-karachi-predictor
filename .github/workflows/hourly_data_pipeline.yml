@@ -1,0 +1,49 @@
+name: ⏱️ Hourly AQI Data Pipeline
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # Every hour
+  workflow_dispatch:     # manual trigger for testing
+
+jobs:
+  fetch-and-process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: ⚙️ Install Dependencies
+        run: |
+          echo "🔄 Removing any pre-installed Hopsworks or Kafka..."
+          pip uninstall -y hopsworks hsfs hopsworks-common confluent-kafka || true
+
+          echo "📦 Installing correct versions (no cache)..."
+          pip install --no-cache-dir "confluent-kafka==2.3.0"
+          pip install --no-cache-dir "hopsworks[python]==4.2.0"
+          pip install --no-cache-dir -r requirements.txt
+          
+          echo "✅ Final versions:"
+          pip show hopsworks | grep Version
+          pip show confluent-kafka | grep Version
+
+
+      - name: 🌍 Run Data Fetching Script
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+          HOPSWORKS_PROJECT: ${{ secrets.HOPSWORKS_PROJECT }}
+          LAT: ${{ secrets.LAT }}
+          LON: ${{ secrets.LON }}
+        run: |
+          python src/features/fetch_raw_data.py
+
+      - name: 🔧 Process and Engineer Features
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+          HOPSWORKS_PROJECT: ${{ secrets.HOPSWORKS_PROJECT }}
+        run: |
+          python src/features/process_features.py

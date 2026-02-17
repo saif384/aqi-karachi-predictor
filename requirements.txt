@@ -1,0 +1,30 @@
+# Core data and ML libraries
+pandas
+numpy
+scikit-learn
+xgboost==2.0.3
+joblib
+tensorflow
+
+# API and web framework
+fastapi
+uvicorn
+
+# Frontend
+streamlit
+plotly
+
+
+# Hopsworks + feature store
+hopsworks[python]==4.2.*
+
+
+# For fetching and caching Open-Meteo data
+openmeteo-requests
+requests-cache
+retry-requests
+
+# Utility
+python-dotenv
+
+

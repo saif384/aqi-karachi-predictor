@@ -1,0 +1,30 @@
+name: 🌄 Daily AQI Model Training
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Every day at midnight
+  workflow_dispatch:      # manual trigger
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: ⚙️ Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: 🧠 Train and Register Model
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+          HOPSWORKS_PROJECT: ${{ secrets.HOPSWORKS_PROJECT }}
+        run: |
+          python src/train/train_model.py
